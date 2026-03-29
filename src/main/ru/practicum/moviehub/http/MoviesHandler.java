@@ -46,7 +46,6 @@ class MoviesHandler extends BaseHttpHandler {
     }
 
     private Endpoint getEndpoint(URI requestURL, String requestMethod) {
-
         String[] paths = requestURL.getPath().split("/");
 
         switch (requestMethod) {
@@ -99,7 +98,6 @@ class MoviesHandler extends BaseHttpHandler {
         } catch (NumberFormatException e) {
             sendJson(exchange, 400, gson.toJson(new ErrorResponse("Некорректный параметр запроса — 'year'")));
         }
-
     }
 
     private Optional<String> getQueryParam(URI url, String parameter) {
@@ -109,7 +107,7 @@ class MoviesHandler extends BaseHttpHandler {
         }
 
         return Stream.of(filter.split("&"))
-                .filter( s -> s.contains(parameter + "="))
+                .filter(s -> s.contains(parameter + "="))
                 .map(s -> s.split("="))
                 .filter(strings -> strings.length == 2)
                 .map(strings -> strings[1])
