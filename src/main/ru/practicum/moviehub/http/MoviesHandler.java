@@ -34,7 +34,6 @@ class MoviesHandler extends BaseHttpHandler {
     @Override
     public void handle(HttpExchange ex) throws IOException {
         Endpoint endpoint = getEndpoint(ex.getRequestURI(), ex.getRequestMethod());
-        
         switch (endpoint) {
             case GET_MOVIES -> this.sendJson(ex, 200, this.getMovies());
             case POST_MOVIE -> this.postMovie(ex);
