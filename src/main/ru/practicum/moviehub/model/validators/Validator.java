@@ -1,7 +1,7 @@
 package ru.practicum.moviehub.model.validators;
 
-import ru.practicum.moviehub.exceptions.MovieValidateException;
+import java.util.List;
 
 public interface Validator<T> {
-    void validate(T value) throws MovieValidateException;
+    void validate(T value, List<String> errors);
 }

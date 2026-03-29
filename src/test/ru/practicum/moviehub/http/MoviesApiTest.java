@@ -194,7 +194,7 @@ public class MoviesApiTest {
                 requestBoby,
                 true);
 
-        assertEquals(415, rec.statusCode());
+        assertEquals(422, rec.statusCode());
     }
 
     @DisplayName("GET. Поиск заказ по ID")

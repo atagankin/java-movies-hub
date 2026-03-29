@@ -15,16 +15,14 @@ import java.util.stream.Stream;
 
 import ru.practicum.moviehub.api.ErrorResponse;
 import ru.practicum.moviehub.model.Movie;
-import ru.practicum.moviehub.exceptions.MovieNameException;
 import ru.practicum.moviehub.exceptions.MovieNotFound;
 import ru.practicum.moviehub.exceptions.MovieValidateException;
-import ru.practicum.moviehub.exceptions.MovieYearException;
 import ru.practicum.moviehub.model.validators.NameValidator;
 import ru.practicum.moviehub.model.validators.YearValidator;
 import ru.practicum.moviehub.store.MoviesStore;
 
 
-class MoviesHandler extends BaseHttpHandler {
+public class MoviesHandler extends BaseHttpHandler {
     private final MoviesStore movieStore;
 
     public MoviesHandler(MoviesStore movieStore) {
@@ -40,7 +38,7 @@ class MoviesHandler extends BaseHttpHandler {
             case GET_MOVIE_BY_ID -> this.getMovieByID(ex);
             case DELETE_MOVIE -> this.deleteById(ex);
             case GET_MOVIES_BY_YEAR -> this.getMoviesByYear(ex);
-            case UNKNOWN -> sendJson(ex, 404, gson.toJson(new ErrorResponse("Not Found")));
+            case UNKNOWN -> sendJson(ex, 405, gson.toJson(new ErrorResponse("METHOD_NOT_ALLOWED")));
         }
     }
 
@@ -175,26 +173,16 @@ class MoviesHandler extends BaseHttpHandler {
                 throw new MovieValidateException("Должны быть заданы title и year");
             }
 
-            String title = json.get("title").getAsString();
-            int year = json.get("year").getAsInt();
-
-            // Приходится проверять отдельно, чтобы собрать все ошибки, а не выйти по первой
-            try {
-                yearValidator.validate(year);
-            } catch (MovieYearException e) {
-                errors.add(e.getMessage());
-            }
-
-            try {
-                nameValidator.validate(title);
-            } catch (MovieNameException e) {
-                errors.add(e.getMessage());
-            }
+            nameValidator.validate(json.get("title").getAsString(), errors);
+            yearValidator.validate(json.get("year").getAsString(), errors);
 
             if (!errors.isEmpty()) {
                 sendJson(exchange, 422,
                         gson.toJson(new ErrorResponse("Ошибка валидации фильма", errors.toArray(new String[0]))));
             } else {
+                String title = json.get("title").getAsString();
+                int year = json.get("year").getAsInt();
+
                 Movie movie;
                 movie = new Movie(title, year);
                 if (movieStore.getStore().containsKey(movie.hashCode())) {
@@ -206,8 +194,8 @@ class MoviesHandler extends BaseHttpHandler {
             }
         } catch (JsonSyntaxException e) {
             sendJson(exchange, 400, gson.toJson(new ErrorResponse(e.getMessage())));
-        } catch (MovieValidateException | NumberFormatException e) {
-            sendJson(exchange, 415, gson.toJson(new ErrorResponse(e.getMessage())));
+        } catch (MovieValidateException e) {
+            sendJson(exchange, 422, gson.toJson(new ErrorResponse(e.getMessage())));
         }
     }
 }
